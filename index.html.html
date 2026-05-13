@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>일본어 마스터 (풀버전)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        .jp-text { font-family: 'Noto Sans JP', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-800 min-h-screen flex justify-center items-center font-sans">
+
+    <!-- 스마트폰 형태 UI -->
+    <div class="relative w-full max-w-[400px] h-[100dvh] sm:h-[800px] sm:rounded-[2.5rem] sm:border-[10px] border-slate-900 bg-slate-50 shadow-2xl flex flex-col overflow-hidden">
+        
+        <!-- 상단 헤더 -->
+        <div class="bg-indigo-600 pt-6 pb-4 px-4 shadow-md z-10 shrink-0">
+            <h1 class="text-xl font-extrabold text-white mb-4 text-center tracking-tight">🇯🇵 일본어 마스터 (풀버전)</h1>
+            
+            <div class="flex flex-wrap gap-2 justify-center" id="stage-buttons">
+                <button onclick="loadStage(0)" class="px-3 py-1.5 bg-yellow-400 text-indigo-900 text-xs font-bold rounded-lg shadow-sm transition border-2 border-transparent w-full mb-1">⭐ 0단계: 그림 암기장 (전체 92자)</button>
+                <button onclick="loadStage(1)" class="px-3 py-1.5 bg-indigo-400 text-white text-xs font-bold rounded-lg shadow-sm transition hover:bg-indigo-500">1단계</button>
+                <button onclick="loadStage(2)" class="px-3 py-1.5 bg-indigo-400 text-white text-xs font-bold rounded-lg shadow-sm transition hover:bg-indigo-500">2단계</button>
+                <button onclick="loadStage(3)" class="px-3 py-1.5 bg-indigo-400 text-white text-xs font-bold rounded-lg shadow-sm transition hover:bg-indigo-500">3단계</button>
+                <button onclick="loadStage(4)" class="px-3 py-1.5 bg-indigo-400 text-white text-xs font-bold rounded-lg shadow-sm transition hover:bg-indigo-500">4단계</button>
+                <button onclick="loadStage(5)" class="px-3 py-1.5 bg-indigo-400 text-white text-xs font-bold rounded-lg shadow-sm transition hover:bg-indigo-500">5단계</button>
+            </div>
+        </div>
+
+        <!-- 메인 콘텐츠 영역 -->
+        <div class="flex-grow p-4 overflow-y-auto relative flex flex-col">
+            
+            <!-- 0단계: 암기장 -->
+            <div id="study-container" class="hidden flex-col h-full">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-sm font-bold text-yellow-600 bg-yellow-100 px-3 py-1 rounded-md">문자 연상 학습</h2>
+                    <span id="study-progress" class="text-sm font-semibold text-slate-400"></span>
+                </div>
+
+                <div class="flex-grow flex flex-col justify-center items-center bg-white rounded-3xl shadow-sm border border-slate-200 p-6 text-center mb-4 relative">
+                    <span id="study-type" class="px-3 py-1 bg-slate-100 text-slate-500 text-xs font-bold rounded-full mb-4"></span>
+                    <div id="study-img" class="text-7xl mb-2 drop-shadow-md"></div>
+                    <h3 id="study-char" class="jp-text text-8xl font-black text-slate-800 mb-1"></h3>
+                    <p id="study-pronounce" class="text-2xl font-bold text-indigo-600 mb-6"></p>
+                    <div class="bg-indigo-50 w-full p-4 rounded-xl border border-indigo-100 min-h-[80px] flex flex-col justify-center">
+                        <p class="text-xs text-indigo-400 mb-1 font-bold">💡 이렇게 외워보세요</p>
+                        <p id="study-mnemonic" class="text-sm font-semibold text-slate-700 leading-relaxed"></p>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 mt-auto pb-4 shrink-0">
+                    <button onclick="prevStudyCard()" class="flex-1 py-4 bg-slate-200 text-slate-700 font-bold rounded-2xl shadow-sm active:bg-slate-300">◀ 이전</button>
+                    <button onclick="nextStudyCard()" class="flex-1 py-4 bg-yellow-400 text-indigo-900 font-bold rounded-2xl shadow-sm active:bg-yellow-500">다음 ▶</button>
+                </div>
+            </div>
+
+            <!-- 1~5단계: 퀴즈 -->
+            <div id="quiz-container" class="hidden flex-col h-full">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 id="current-stage-title" class="text-sm font-bold text-indigo-600 bg-indigo-100 px-3 py-1 rounded-md"></h2>
+                    <span id="quiz-progress" class="text-sm font-semibold text-slate-400"></span>
+                </div>
+
+                <div class="flex-grow flex items-center justify-center py-8 mb-4 bg-white rounded-3xl shadow-sm border border-slate-200 px-4">
+                    <p id="question-text" class="jp-text text-center text-6xl font-bold text-slate-800 leading-tight"></p>
+                </div>
+
+                <div class="mt-auto pb-4 shrink-0">
+                    <div id="input-area" class="flex flex-col gap-2">
+                        <input type="text" id="answer-input" placeholder="발음 입력 (예: 카)" 
+                            class="w-full px-4 py-4 bg-white border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 text-base text-center transition shadow-sm"
+                            onkeypress="handleKeyPress(event)" autocomplete="off">
+                        <button onclick="checkAnswer()" id="submit-btn"
+                            class="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl active:bg-indigo-700 shadow-md transition text-base">
+                            정답 확인
+                        </button>
+                    </div>
+
+                    <div id="feedback-area" class="hidden flex-col gap-2">
+                        <div id="feedback-box" class="p-4 rounded-xl text-center">
+                            <div class="text-3xl mb-1" id="feedback-icon"></div>
+                            <h3 id="feedback-title" class="text-lg font-bold mb-2"></h3>
+                            <div class="bg-white/50 p-3 rounded-lg inline-block text-left w-full">
+                                <p class="text-xs opacity-70">발음</p>
+                                <p class="font-bold text-base mb-1" id="feedback-p"></p>
+                                <p class="text-xs opacity-70">뜻</p>
+                                <p class="font-bold text-base" id="feedback-q"></p>
+                            </div>
+                        </div>
+                        <button onclick="nextQuestion()" id="next-btn"
+                            class="w-full py-4 bg-slate-800 text-white font-bold rounded-xl active:bg-slate-900 shadow-md transition text-base">
+                            다음 문제
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 0단계 전체 데이터 (히라가나 46자 + 가타카나 46자 = 92자)
+        // ==========================================
+        const studyData = [
+            // 히라가나 46자
+            { char: "あ", type: "히라가나", p: "a (아)", img: "🍦", mnemonic: "아이스크림을 먹는 입 모양" },
+            { char: "い", type: "히라가나", p: "i (이)", img: "🦷", mnemonic: "나란히 난 두 개의 이빨" },
+            { char: "う", type: "히라가나", p: "u (우)", img: "☂️", mnemonic: "구부러진 우산 손잡이" },
+            { char: "え", type: "히라가나", p: "e (에)", img: "🤸", mnemonic: "에어로빅을 하는 사람의 자세" },
+            { char: "お", type: "히라가나", p: "o (오)", img: "🦆", mnemonic: "날개를 편 오리 모양" },
+            { char: "か", type: "히라가나", p: "ka (카)", img: "💪", mnemonic: "힘을 주어 알통(카)이 생긴 팔" },
+            { char: "き", type: "히라가나", p: "ki (키)", img: "🔑", mnemonic: "열쇠(키) 모양" },
+            { char: "く", type: "히라가나", p: "ku (쿠)", img: "🐦", mnemonic: "새의 부리 모양" },
+            { char: "け", type: "히라가나", p: "ke (케)", img: "🔌", mnemonic: "케이블선이 연결된 모양" },
+            { char: "こ", type: "히라가나", p: "ko (코)", img: "🐘", mnemonic: "코끼리의 긴 코" },
+            { char: "さ", type: "히라가나", p: "sa (사)", img: "🍎", mnemonic: "사과나무 가지 모양" },
+            { char: "し", type: "히라가나", p: "shi (시)", img: "🎣", mnemonic: "낚싯바늘 모양" },
+            { char: "す", type: "히라가나", p: "su (스)", img: "🌀", mnemonic: "스프링이 꼬인 모양" },
+            { char: "せ", type: "히라가나", p: "se (세)", img: "🚰", mnemonic: "세면대의 수도꼭지" },
+            { char: "そ", type: "히라가나", p: "so (소)", img: "🐚", mnemonic: "구불구불한 소라 껍데기" },
+            { char: "た", type: "히라가나", p: "ta (타)", img: "🦅", mnemonic: "타조가 달려가는 모습" },
+            { char: "ち", type: "히라가나", p: "chi (치)", img: "💃", mnemonic: "치어리더가 춤추는 모습" },
+            { char: "つ", type: "히라가나", p: "tsu (츠)", img: "🌊", mnemonic: "츠나미(해일)가 몰려오는 파도" },
+            { char: "て", type: "히라가나", p: "te (테)", img: "🎾", mnemonic: "테니스 라켓 모양" },
+            { char: "と", type: "히라가나", p: "to (토)", img: "🐰", mnemonic: "토끼의 두 귀" },
+            { char: "な", type: "히라가나", p: "na (나)", img: "🦋", mnemonic: "나비가 날아가는 모습" },
+            { char: "に", type: "히라가나", p: "ni (니)", img: "🪡", mnemonic: "바늘(니들)과 실" },
+            { char: "ぬ", type: "히라가나", p: "nu (누)", img: "🍜", mnemonic: "누들(국수)이 꼬인 모양" },
+            { char: "ね", type: "히라가나", p: "ne (네)", img: "🐈", mnemonic: "네코(고양이)가 꼬리를 만 모습" },
+            { char: "の", type: "히라가나", p: "no (노)", img: "🚫", mnemonic: "NO(금지) 표시판" },
+            { char: "は", type: "히라가나", p: "ha (하)", img: "🎼", mnemonic: "하프의 현 모양" },
+            { char: "ひ", type: "히라가나", p: "hi (히)", img: "👄", mnemonic: "히죽 웃는 입 모양" },
+            { char: "ふ", type: "히라가나", p: "fu (후)", img: "🗻", mnemonic: "후지산의 산봉우리" },
+            { char: "へ", type: "히라가나", p: "he (헤)", img: "⛰️", mnemonic: "산을 향해 오르는 모습" },
+            { char: "ほ", type: "히라가나", p: "ho (호)", img: "🐯", mnemonic: "호랑이의 줄무늬" },
+            { char: "ま", type: "히라가나", p: "ma (마)", img: "🪄", mnemonic: "마술 지팡이" },
+            { char: "み", type: "히라가나", p: "mi (미)", img: "🛝", mnemonic: "미끄럼틀 모양" },
+            { char: "む", type: "히라가나", p: "mu (무)", img: "🦏", mnemonic: "무소(코뿔소)의 뿔" },
+            { char: "め", type: "히라가나", p: "me (메)", img: "👁️", mnemonic: "눈(메) 모양" },
+            { char: "も", type: "히라가나", p: "mo (모)", img: "🧵", mnemonic: "털(모)이 꼬인 모양" },
+            { char: "や", type: "히라가나", p: "ya (야)", img: "⚾", mnemonic: "야구공의 실밥" },
+            { char: "ゆ", type: "히라가나", p: "yu (유)", img: "👻", mnemonic: "유령이 떠다니는 모습" },
+            { char: "よ", type: "히라가나", p: "yo (요)", img: "🪀", mnemonic: "요요가 풀린 모양" },
+            { char: "ら", type: "히라가나", p: "ra (라)", img: "📻", mnemonic: "라디오 안테나" },
+            { char: "り", type: "히라가나", p: "ri (리)", img: "🎀", mnemonic: "리본의 끈 두 가닥" },
+            { char: "る", type: "히라가나", p: "ru (루)", img: "➰", mnemonic: "루프(Loop)가 꼬인 모양" },
+            { char: "れ", type: "히라가나", p: "re (레)", img: "🍋", mnemonic: "레몬 모양" },
+            { char: "ろ", type: "히라가나", p: "ro (로)", img: "🛣️", mnemonic: "로드(길)가 굽은 모양" },
+            { char: "わ", type: "히라가나", p: "wa (와)", img: "🍷", mnemonic: "와인잔의 둥근 부분" },
+            { char: "を", type: "히라가나", p: "wo (오/워)", img: "🏃", mnemonic: "장애물을 넘는 육상선수" },
+            { char: "ん", type: "히라가나", p: "n (응)", img: "📈", mnemonic: "알파벳 N의 필기체" },
+
+            // 가타카나 46자
+            { char: "ア", type: "가타카나", p: "a (아)", img: "🏢", mnemonic: "아파트 옥상 안테나" },
+            { char: "イ", type: "가타카나", p: "i (이)", img: "🎨", mnemonic: "이젤(그림 거치대)" },
+            { char: "ウ", type: "가타카나", p: "u (우)", img: "☔", mnemonic: "우산 윗부분" },
+            { char: "エ", type: "가타카나", p: "e (에)", img: "🚪", mnemonic: "엘리베이터의 닫힌 문" },
+            { char: "オ", type: "가타카나", p: "o (오)", img: "🕺", mnemonic: "오케스트라 지휘자" },
+            { char: "カ", type: "가타카나", p: "ka (카)", img: "📸", mnemonic: "카메라 삼각대" },
+            { char: "キ", type: "가타카나", p: "ki (키)", img: "🔑", mnemonic: "키(열쇠)의 변형" },
+            { char: "ク", type: "가타카나", p: "ku (쿠)", img: "🍪", mnemonic: "쿠키를 베어먹은 모양" },
+            { char: "ケ", type: "가타카나", p: "ke (케)", img: "🍰", mnemonic: "케이크 조각" },
+            { char: "コ", type: "가타카나", p: "ko (코)", img: "📐", mnemonic: "코너(모서리) 모양" },
+            { char: "サ", type: "가타카나", p: "sa (사)", img: "🪜", mnemonic: "사다리 모양" },
+            { char: "シ", type: "가타카나", p: "shi (시)", img: "🙂", mnemonic: "아래에서 위로 긋는 스마일" },
+            { char: "ス", type: "가타카나", p: "su (스)", img: "🛹", mnemonic: "스케이트 보드" },
+            { char: "セ", type: "가타카나", p: "se (세)", img: "7️⃣", mnemonic: "숫자 7(세븐)의 변형" },
+            { char: "ソ", type: "가타카나", p: "so (소)", img: "🍦", mnemonic: "소프트아이스크림 (위에서 아래로)" },
+            { char: "タ", type: "가타카나", p: "ta (타)", img: "🗼", mnemonic: "타워 모양" },
+            { char: "チ", type: "가타카나", p: "chi (치)", img: "👖", mnemonic: "청바지(치노) 모양" },
+            { char: "ツ", type: "가타카나", p: "tsu (츠)", img: "🌧️", mnemonic: "빗방울이 위에서 아래로 떨어짐" },
+            { char: "テ", type: "가타카나", p: "te (테)", img: "🪑", mnemonic: "테이블의 옆모습" },
+            { char: "ト", type: "가타카나", p: "to (토)", img: "🍅", mnemonic: "토마토 줄기" },
+            { char: "ナ", type: "가타카나", p: "na (나)", img: "✝️", mnemonic: "십자가(나침반) 모양" },
+            { char: "ニ", type: "가타카나", p: "ni (니)", img: "✌️", mnemonic: "한자 두 이(二)" },
+            { char: "ヌ", type: "가타카나", p: "nu (누)", img: "⛩️", mnemonic: "누각 지붕" },
+            { char: "ネ", type: "가타카나", p: "ne (네)", img: "🛣️", mnemonic: "네 갈래 길" },
+            { char: "ノ", type: "가타카나", p: "no (노)", img: "🛶", mnemonic: "노를 젓는 막대기" },
+            { char: "ハ", type: "가타카나", p: "ha (하)", img: "八", mnemonic: "한자 여덟 팔(八)" },
+            { char: "ヒ", type: "가타카나", p: "hi (히)", img: "♨️", mnemonic: "히터의 열기" },
+            { char: "フ", type: "가타카나", p: "fu (후)", img: "🪝", mnemonic: "후크 선장의 갈고리" },
+            { char: "ヘ", type: "가타카나", p: "he (헤)", img: "⛰️", mnemonic: "산봉우리" },
+            { char: "ホ", type: "가타카나", p: "ho (호)", img: "🏨", mnemonic: "호텔(Hotel) 표지판" },
+            { char: "マ", type: "가타카나", p: "ma (마)", img: "🖱️", mnemonic: "마우스의 선" },
+            { char: "ミ", type: "가타카나", p: "mi (미)", img: "🚀", mnemonic: "미사일 세 개" },
+            { char: "ム", type: "가타카나", p: "mu (무)", img: "🦵", mnemonic: "무릎을 굽힌 다리" },
+            { char: "メ", type: "가타카나", p: "me (메)", img: "❌", mnemonic: "메모지의 X 표시" },
+            { char: "モ", type: "가타카나", p: "mo (모)", img: "🖥️", mnemonic: "모니터" },
+            { char: "ヤ", type: "가타카나", p: "ya (야)", img: "🌴", mnemonic: "야자수 나무" },
+            { char: "ユ", type: "가타카나", p: "yu (유)", img: "🛸", mnemonic: "UFO 모양" },
+            { char: "ヨ", type: "가타카나", p: "yo (요)", img: "⛵", mnemonic: "요트의 돛" },
+            { char: "ラ", type: "가타카나", p: "ra (라)", img: "💡", mnemonic: "라이트(전등) 커버" },
+            { char: "リ", type: "가타카나", p: "ri (리)", img: "🔪", mnemonic: "나란한 칼날" },
+            { char: "ル", type: "가타카나", p: "ru (루)", img: "🦘", mnemonic: "캥거루의 두 다리" },
+            { char: "レ", type: "가타카나", p: "re (레)", img: "💽", mnemonic: "레코드판 바늘" },
+            { char: "ロ", type: "가타카나", p: "ro (로)", img: "⏹️", mnemonic: "사각형 블록" },
+            { char: "ワ", type: "가타카나", p: "wa (와)", img: "🍷", mnemonic: "와인잔의 형태" },
+            { char: "ヲ", type: "가타카나", p: "wo (오/워)", img: "🛝", mnemonic: "워터 슬라이드" },
+            { char: "ン", type: "가타카나", p: "n (응)", img: "👆", mnemonic: "아래에서 위로 점 찍기" }
+        ];
+
+        // 1~5단계 전체 퀴즈 데이터
+        const wordData = {
+            1: [
+                { q: "아", a: "あ", p: "a" }, { q: "이", a: "い", p: "i" }, { q: "우", a: "う", p: "u" }, { q: "에", a: "え", p: "e" }, { q: "오", a: "お", p: "o" },
+                { q: "카", a: "か", p: "ka" }, { q: "키", a: "き", p: "ki" }, { q: "쿠", a: "く", p: "ku" }, { q: "케", a: "け", p: "ke" }, { q: "코", a: "こ", p: "ko" },
+                { q: "사", a: "さ", p: "sa" }, { q: "시", a: "し", p: "shi" }, { q: "스", a: "す", p: "su" }, { q: "세", a: "せ", p: "se" }, { q: "소", a: "そ", p: "so" },
+                { q: "타", a: "た", p: "ta" }, { q: "치", a: "ち", p: "chi" }, { q: "츠", a: "つ", p: "tsu" }, { q: "테", a: "て", p: "te" }, { q: "토", a: "と", p: "to" },
+                { q: "나", a: "な", p: "na" }, { q: "니", a: "に", p: "ni" }, { q: "누", a: "ぬ", p: "nu" }, { q: "네", a: "ね", p: "ne" }, { q: "노", a: "の", p: "no" },
+                { q: "하", a: "は", p: "ha" }, { q: "히", a: "ひ", p: "hi" }, { q: "후", a: "ふ", p: "fu" }, { q: "헤", a: "へ", p: "he" }, { q: "호", a: "ほ", p: "ho" },
+                { q: "마", a: "ま", p: "ma" }, { q: "미", a: "み", p: "mi" }, { q: "무", a: "む", p: "mu" }, { q: "메", a: "め", p: "me" }, { q: "모", a: "も", p: "mo" },
+                { q: "야", a: "や", p: "ya" }, { q: "유", a: "ゆ", p: "yu" }, { q: "요", a: "よ", p: "yo" },
+                { q: "라", a: "ら", p: "ra" }, { q: "리", a: "り", p: "ri" }, { q: "루", a: "る", p: "ru" }, { q: "레", a: "れ", p: "re" }, { q: "로", a: "ろ", p: "ro" },
+                { q: "와", a: "わ", p: "wa" }, { q: "오", a: "を", p: "wo" }, { q: "응", a: "ん", p: "n" }
+            ],
+            2: [
+                { q: "아", a: "ア", p: "a" }, { q: "이", a: "イ", p: "i" }, { q: "우", a: "ウ", p: "u" }, { q: "에", a: "エ", p: "e" }, { q: "오", a: "オ", p: "o" },
+                { q: "카", a: "カ", p: "ka" }, { q: "키", a: "キ", p: "ki" }, { q: "쿠", a: "ク", p: "ku" }, { q: "케", a: "ケ", p: "ke" }, { q: "코", a: "コ", p: "ko" },
+                { q: "사", a: "サ", p: "sa" }, { q: "시", a: "シ", p: "shi" }, { q: "스", a: "ス", p: "su" }, { q: "세", a: "セ", p: "se" }, { q: "소", a: "ソ", p: "so" },
+                { q: "타", a: "タ", p: "ta" }, { q: "치", a: "チ", p: "chi" }, { q: "츠", a: "ツ", p: "tsu" }, { q: "테", a: "テ", p: "te" }, { q: "토", a: "ト", p: "to" },
+                { q: "나", a: "ナ", p: "na" }, { q: "니", a: "ニ", p: "ni" }, { q: "누", a: "ヌ", p: "nu" }, { q: "네", a: "ネ", p: "ne" }, { q: "노", a: "ノ", p: "no" },
+                { q: "하", a: "ハ", p: "ha" }, { q: "히", a: "ヒ", p: "hi" }, { q: "후", a: "フ", p: "fu" }, { q: "헤", a: "ヘ", p: "he" }, { q: "호", a: "ホ", p: "ho" },
+                { q: "마", a: "マ", p: "ma" }, { q: "미", a: "ミ", p: "mi" }, { q: "무", a: "ム", p: "mu" }, { q: "메", a: "メ", p: "me" }, { q: "모", a: "モ", p: "mo" },
+                { q: "야", a: "ヤ", p: "ya" }, { q: "유", a: "ユ", p: "yu" }, { q: "요", a: "ヨ", p: "yo" },
+                { q: "라", a: "ラ", p: "ra" }, { q: "리", a: "リ", p: "ri" }, { q: "루", a: "ル", p: "ru" }, { q: "레", a: "レ", p: "re" }, { q: "로", a: "ロ", p: "ro" },
+                { q: "와", a: "ワ", p: "wa" }, { q: "오", a: "ヲ", p: "wo" }, { q: "응", a: "ン", p: "n" }
+            ],
+            3: [
+                { q: "안녕하세요", a: "こんにちは", p: "곤니치와" },
+                { q: "감사합니다", a: "ありがとうございます", p: "아리가토고자이마스" },
+                { q: "죄송합니다", a: "すみません", p: "스미마센" },
+                { q: "얼마입니까?", a: "いくらですか", p: "이쿠라데스카" }
+            ],
+            4: [
+                { q: "화장실은 어디에 있습니까?", a: "トイレはどこにありますか", p: "토이레와도코니아리마스카" },
+                { q: "사진을 찍어 주실 수 있나요?", a: "写真を撮っていただけますか", p: "샤신오톳테이타다케마스카" },
+                { q: "추천 메뉴는 무엇입니까?", a: "おすすめのメニューは何ですか", p: "오스스메노메뉴와난데스카" }
+            ],
+            5: [
+                { q: "여권을 잃어버렸습니다.", a: "パスポートを紛失しました。", p: "파스포토오분시츠시마시타" },
+                { q: "계란은 빼고 조리해 주세요.", a: "卵を抜いて調理してください。", p: "타마고오누이테쵸리시테쿠다사이" },
+                { q: "내일 오후 3시로 변경 가능할까요?", a: "明日の午後3時に可能でしょうか。", p: "아스노고고산지니카노데쇼카" }
+            ]
+        };
+
+        const stageTitles = {
+            1: "1단계: 히라가나 46자 랜덤퀴즈", 2: "2단계: 가타카나 46자 랜덤퀴즈",
+            3: "3단계: 여행 초급", 4: "4단계: 여행 중급", 5: "5단계: 여행 고급"
+        };
+
+        let currentMode = null;
+        let currentStage = null;
+        let studyIndex = 0;
+        let currentQuizList = [];
+        let quizIndex = 0;
+        let isAnswered = false;
+
+        window.onload = function() { loadStage(0); };
+
+        function loadStage(stageNum) {
+            const buttons = document.querySelectorAll('#stage-buttons button');
+            buttons.forEach((btn, index) => {
+                if (index === stageNum) {
+                    btn.classList.add('ring-2', 'ring-white', 'scale-105');
+                    btn.classList.remove('opacity-80');
+                } else {
+                    btn.classList.remove('ring-2', 'ring-white', 'scale-105');
+                    btn.classList.add('opacity-80');
+                }
+            });
+
+            if (stageNum === 0) {
+                currentMode = 'study';
+                document.getElementById('quiz-container').classList.add('hidden');
+                document.getElementById('study-container').classList.remove('hidden');
+                document.getElementById('study-container').classList.add('flex');
+                studyIndex = 0;
+                showStudyCard();
+            } else {
+                currentMode = 'quiz';
+                currentStage = stageNum;
+                document.getElementById('study-container').classList.add('hidden');
+                document.getElementById('study-container').classList.remove('flex');
+                document.getElementById('quiz-container').classList.remove('hidden');
+                document.getElementById('quiz-container').classList.add('flex');
+                
+                document.getElementById('current-stage-title').innerText = stageTitles[stageNum];
+                currentQuizList = shuffleArray([...wordData[stageNum]]);
+                quizIndex = 0;
+                showQuestion();
+            }
+        }
+
+        function showStudyCard() {
+            const data = studyData[studyIndex];
+            document.getElementById('study-progress').innerText = `${studyIndex + 1} / ${studyData.length}`;
+            document.getElementById('study-type').innerText = data.type;
+            document.getElementById('study-img').innerText = data.img;
+            document.getElementById('study-char').innerText = data.char;
+            document.getElementById('study-pronounce').innerText = data.p;
+            document.getElementById('study-mnemonic').innerText = data.mnemonic;
+        }
+
+        function nextStudyCard() {
+            studyIndex = (studyIndex + 1) % studyData.length;
+            showStudyCard();
+        }
+
+        function prevStudyCard() {
+            studyIndex = (studyIndex - 1 + studyData.length) % studyData.length;
+            showStudyCard();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function normalizeString(str) {
+            return str.replace(/[\s\-\.\?\!\,]/g, '').toLowerCase();
+        }
+
+        function showQuestion() {
+            isAnswered = false;
+            const currentWord = currentQuizList[quizIndex];
+            document.getElementById('quiz-progress').innerText = `${quizIndex + 1} / ${currentQuizList.length}`;
+            
+            const qText = document.getElementById('question-text');
+            qText.innerText = currentWord.a;
+            qText.className = currentWord.a.length > 8 
+                ? "jp-text text-center text-3xl font-bold text-slate-800 leading-tight" 
+                : "jp-text text-center text-6xl font-bold text-slate-800 leading-tight";
+            
+            const answerInput = document.getElementById('answer-input');
+            answerInput.value = '';
+            answerInput.disabled = false;
+            
+            document.getElementById('input-area').classList.remove('hidden');
+            document.getElementById('feedback-area').classList.add('hidden');
+            document.getElementById('feedback-area').classList.remove('flex');
+            answerInput.focus();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                if (currentMode === 'quiz') {
+                    !isAnswered ? checkAnswer() : nextQuestion();
+                }
+            }
+        }
+
+        function checkAnswer() {
+            const answerInput = document.getElementById('answer-input');
+            const userAnswer = normalizeString(answerInput.value);
+            
+            if (!userAnswer) {
+                answerInput.classList.add('border-red-400');
+                setTimeout(() => answerInput.classList.remove('border-red-400'), 500);
+                return;
+            }
+
+            isAnswered = true;
+            answerInput.disabled = true;
+            document.getElementById('input-area').classList.add('hidden');
+            const feedbackArea = document.getElementById('feedback-area');
+            feedbackArea.classList.remove('hidden');
+            feedbackArea.classList.add('flex');
+
+            const currentWord = currentQuizList[quizIndex];
+            const isCorrect = (userAnswer === normalizeString(currentWord.p)) || (userAnswer === normalizeString(currentWord.q));
+
+            const fBox = document.getElementById('feedback-box');
+            if (isCorrect) {
+                fBox.className = "p-4 rounded-xl text-center bg-green-100 text-green-800 border-2 border-green-200";
+                document.getElementById('feedback-icon').innerText = "🎉";
+                document.getElementById('feedback-title').innerText = "정답입니다!";
+            } else {
+                fBox.className = "p-4 rounded-xl text-center bg-red-100 text-red-800 border-2 border-red-200";
+                document.getElementById('feedback-icon').innerText = "💡";
+                document.getElementById('feedback-title').innerText = "오답입니다.";
+            }
+
+            document.getElementById('feedback-p').innerText = currentWord.p;
+            document.getElementById('feedback-q').innerText = currentWord.q;
+            
+            setTimeout(() => document.getElementById('next-btn').focus(), 100);
+        }
+
+        function nextQuestion() {
+            quizIndex++;
+            if (quizIndex >= currentQuizList.length) {
+                quizIndex = 0;
+                currentQuizList = shuffleArray([...wordData[currentStage]]);
+            }
+            showQuestion();
+        }
+    </script>
+</body>
+</html>
